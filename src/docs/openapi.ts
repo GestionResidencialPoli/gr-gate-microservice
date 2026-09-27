@@ -53,6 +53,45 @@ const openapi = {
         },
       },
     },
+    "/porteria/visitas": {
+      post: {
+        summary: "Registrar el ingreso de un visitante (VIGILANTE, ADMINISTRACION); devuelve la visita y el aforo actualizado",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["documento", "torre", "numero"],
+                properties: {
+                  documento: { type: "string", maxLength: 30 },
+                  nombre: { type: "string", maxLength: 150, description: "Obligatorio solo en la primera visita del documento" },
+                  torre: { type: "string" },
+                  numero: { type: "string" },
+                  tipoVisita: { type: "string", enum: ["SOCIAL", "DOMICILIO", "SERVICIO", "OTRO"], default: "SOCIAL" },
+                  conVehiculo: { type: "boolean", default: false },
+                  placa: { type: "string", maxLength: 10 },
+                  cerrarVisitaAnterior: { type: "boolean", default: false },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "201": { description: "{ visita, aforo }" },
+          "409": { description: "VISITA_ABIERTA (details.visitaAbiertaId) o AFORO_COMPLETO (details.puedeIngresarSinVehiculo)" },
+          "422": { description: "APARTAMENTO_INVALIDO o NOMBRE_REQUERIDO" },
+          "502": { description: "DIRECTORIO_NO_DISPONIBLE" },
+          ...errorResponses,
+        },
+      },
+    },
+    "/porteria/visitantes/{documento}": {
+      get: {
+        summary: "Autocompletar un visitante por documento (VIGILANTE, ADMINISTRACION)",
+        parameters: [{ name: "documento", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "{ documento, nombre, visitaAbiertaId }" }, "404": { description: "VISITANTE_NO_ENCONTRADO" }, ...errorResponses },
+      },
+    },
     "/porteria/aforo/cambios": {
       get: {
         summary: "Historico de cambios del total de cupos (solo ADMINISTRACION)",
