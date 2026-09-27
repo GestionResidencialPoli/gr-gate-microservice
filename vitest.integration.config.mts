@@ -16,6 +16,7 @@ export default defineConfig({
       RABBITMQ_URL: "amqp://127.0.0.1:1",
       USER_SERVICE_URL: "http://127.0.0.1:47123",
       RATE_LIMIT_MAX: "100000",
+      DB_POOL_MAX: "20",
     },
   },
 });

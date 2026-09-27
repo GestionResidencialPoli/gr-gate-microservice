@@ -1,9 +1,13 @@
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import server from "../../src/server";
 import { residente } from "./support/session";
+import { cerrar, escuchar } from "./support/servidor";
 
-const app = server.app;
+const app = server.httpServer;
+
+beforeAll(escuchar);
+afterAll(cerrar);
 
 describe("esqueleto del servicio", () => {
   it("responde /health sin sesion", async () => {

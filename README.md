@@ -145,6 +145,13 @@ pnpm dev
 Documentacion OpenAPI en `/api-docs` fuera de produccion. Salud: `GET /health` (proceso vivo) y
 `GET /health/ready` (base de datos disponible).
 
+## Concurrencia
+
+La decision sobre el contador de aforo, con la comparacion medida de las alternativas (sin mecanismo, contador
+en memoria tipo `AtomicInteger` con 1 y 2 replicas, bloqueo optimista y actualizacion condicional atomica) y la
+evidencia con dos replicas reales, esta en `docs/decisiones/ADR-004-aforo-parqueadero.md`. La suite que la
+sostiene es `test/integration/concurrencia-aforo.it.test.ts`.
+
 ## Pruebas
 
 ```bash

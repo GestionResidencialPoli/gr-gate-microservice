@@ -3,7 +3,7 @@ import knex from "../../../src/db/knex";
 import server from "../../../src/server";
 import { vigilante, type TestSession } from "./session";
 
-const app = server.app;
+const app = server.httpServer;
 let secuencia = 0;
 
 export function documentoUnico(): string {

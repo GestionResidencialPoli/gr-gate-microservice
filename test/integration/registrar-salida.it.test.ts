@@ -1,11 +1,15 @@
 import request from "supertest";
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import knex from "../../src/db/knex";
 import server from "../../src/server";
 import { cerrarVisitasAbiertas, documentoUnico, fijarAforo, ingresar, registrarSalida } from "./support/porteria";
 import { administrador, residente, vigilante } from "./support/session";
+import { cerrar, escuchar } from "./support/servidor";
 
-const app = server.app;
+const app = server.httpServer;
+
+beforeAll(escuchar);
+afterAll(cerrar);
 
 async function ocupados(): Promise<number> {
   const aforo = await knex("aforo_parqueadero").where({ id: 1 }).first();
