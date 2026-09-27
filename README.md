@@ -57,6 +57,7 @@ Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, C
 |---|---|---|---|
 | GET | `/aforo` | VIGILANTE, ADMINISTRACION | `{ total, ocupados, disponibles, sobrecupo, estado, actualizadoEn }`; `estado` es `DISPONIBLE`, `POCOS_CUPOS` (2 o menos) o `COMPLETO` |
 | PUT | `/aforo/total` | ADMINISTRACION | `{ total }` mayor que cero. Si hay mas vehiculos dentro que el nuevo total responde `advertencia: SOBRECUPO_TRANSITORIO`: nadie sale, pero no entra ningun vehiculo hasta bajar del total |
+| GET | `/eventos` | VIGILANTE, ADMINISTRACION | Tablero en tiempo real por SSE (HU-4.4): `aforo.actual` al conectar y luego `aforo.actualizado`, `visita.ingreso` y `visita.salida` |
 | GET | `/aforo/cambios?page=&size=` | ADMINISTRACION | Historico: total anterior, nuevo, ocupados en ese momento, responsable y fecha |
 
 ### Visitas (HU-4.1)
@@ -85,6 +86,24 @@ defecto), para depurar el listado al entregar el turno.
 La salida cierra la visita con un `UPDATE ... WHERE id = ? AND salida_en IS NULL` y libera el cupo **solo si esa
 misma sentencia cambio la visita de abierta a cerrada**, en la misma transaccion. Un doble clic o dos porterias
 registrando la salida a la vez liberan un unico cupo; la segunda respuesta llega con `yaEstabaCerrada: true`.
+
+### Tablero en tiempo real
+
+`GET /api/v1/porteria/eventos` es un stream `text/event-stream`. Cada conexion declara una cola exclusiva en
+RabbitMQ enlazada a `aforo.#` y `visita.#` de `gr.gate.events`, asi que un ingreso registrado en cualquier
+porteria, y en cualquier replica del servicio, llega a todos los tableros abiertos sin recargar. Eventos:
+
+```
+event: aforo.actual        data: { "aforo": { total, ocupados, disponibles, sobrecupo, estado, actualizadoEn } }
+event: aforo.actualizado   data: { "type", "occurredAt", "aforo": { ... } }
+event: visita.ingreso      data: { "type", "occurredAt", "visitaId", "apartamentoId" }
+event: visita.salida       data: { "type", "occurredAt", "visitaId", "apartamentoId" }
+event: tiempo-real-no-disponible  data: { "reintentarEnMs": 10000 }
+```
+
+Si RabbitMQ no esta disponible se envia `tiempo-real-no-disponible` y el cliente debe consultar `GET /aforo` cada
+10 segundos, como permite la nota del CA-5. `actualizadoEn` sirve para mostrar la marca de tiempo del ultimo dato
+valido (CA-6).
 
 ## Comunicacion con otros servicios
 
