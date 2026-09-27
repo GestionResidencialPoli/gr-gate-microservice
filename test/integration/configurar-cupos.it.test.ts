@@ -1,11 +1,15 @@
 import request from "supertest";
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import knex from "../../src/db/knex";
 import AforoRepository from "../../src/repositories/aforo-repository";
 import server from "../../src/server";
 import { administrador, residente, vigilante, type TestSession } from "./support/session";
+import { cerrar, escuchar } from "./support/servidor";
 
-const app = server.app;
+const app = server.httpServer;
+
+beforeAll(escuchar);
+afterAll(cerrar);
 const admin = administrador(901);
 
 function fijarTotal(session: TestSession, total: unknown) {
