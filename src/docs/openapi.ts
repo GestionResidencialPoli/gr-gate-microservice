@@ -41,6 +41,12 @@ const openapi = {
         },
       },
     },
+    "/porteria/eventos": {
+      get: {
+        summary: "Stream SSE del tablero de porteria: aforo.actual, aforo.actualizado, visita.ingreso, visita.salida (VIGILANTE, ADMINISTRACION)",
+        responses: { "200": { description: "text/event-stream" }, ...errorResponses },
+      },
+    },
     "/porteria/aforo/total": {
       put: {
         summary: "Configurar el total de cupos (solo ADMINISTRACION)",
