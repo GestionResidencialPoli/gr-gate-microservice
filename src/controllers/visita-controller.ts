@@ -41,6 +41,15 @@ class VisitaController {
     }
   }
 
+  public static async listHistory(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const historico = await VisitaConsultaService.historico(VisitaValidator.filtroHistorico(req.query));
+      BaseController.handleSuccess(res, { payload: historico });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const visita = await VisitaConsultaService.obtener(VisitaValidator.id(req.params.id));

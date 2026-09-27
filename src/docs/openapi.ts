@@ -54,6 +54,18 @@ const openapi = {
       },
     },
     "/porteria/visitas": {
+      get: {
+        summary: "Historico de visitas con filtros, las mas recientes primero (solo ADMINISTRACION)",
+        parameters: [
+          { name: "desde", in: "query", schema: { type: "string", format: "date" } },
+          { name: "hasta", in: "query", schema: { type: "string", format: "date" } },
+          { name: "torre", in: "query", schema: { type: "string" } },
+          { name: "numero", in: "query", schema: { type: "string" } },
+          { name: "documento", in: "query", schema: { type: "string" } },
+          ...pagina,
+        ],
+        responses: { "200": { description: "{ content, page, size, totalElements, totalPages }" }, ...errorResponses },
+      },
       post: {
         summary: "Registrar el ingreso de un visitante (VIGILANTE, ADMINISTRACION); devuelve la visita y el aforo actualizado",
         requestBody: {

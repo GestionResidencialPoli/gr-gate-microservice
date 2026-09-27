@@ -48,6 +48,9 @@ const config = {
     internalToken: required("INTERNAL_SERVICE_TOKEN"),
     timeoutMs: Number(process.env.USER_SERVICE_TIMEOUT_MS ?? 3_000),
   },
+  zonaHoraria: {
+    offset: process.env.TIMEZONE_OFFSET ?? "-05:00",
+  },
   porteria: {
     horasPosibleOlvido: Number(process.env.HORAS_POSIBLE_OLVIDO ?? 12),
   },
