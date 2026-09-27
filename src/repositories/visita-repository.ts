@@ -27,7 +27,39 @@ export interface FiltroAbiertas {
   conVehiculo?: boolean;
 }
 
+export interface FiltroHistorico {
+  desde?: Date;
+  hasta?: Date;
+  torre?: string;
+  numero?: string;
+  documento?: string;
+  page: number;
+  size: number;
+}
+
 class VisitaRepository {
+  public static async findHistorico(filtro: FiltroHistorico): Promise<{ rows: VisitaRow[]; total: number }> {
+    const filtrada = () => {
+      const query = knex(`${TABLE} as v`).join("visitantes as p", "p.id", "v.visitante_id");
+      if (filtro.desde) query.andWhere("v.entrada_en", ">=", filtro.desde);
+      if (filtro.hasta) query.andWhere("v.entrada_en", "<", filtro.hasta);
+      if (filtro.torre) query.andWhereRaw("lower(v.apartamento_torre) = lower(?)", [filtro.torre]);
+      if (filtro.numero) query.andWhereRaw("lower(v.apartamento_numero) = lower(?)", [filtro.numero]);
+      if (filtro.documento) query.andWhere("p.documento", filtro.documento);
+      return query;
+    };
+
+    const [rows, conteo] = await Promise.all([
+      filtrada()
+        .select("v.*", "p.documento as visitante_documento", "p.nombre as visitante_nombre")
+        .orderBy([{ column: "v.entrada_en", order: "desc" }, { column: "v.id", order: "desc" }])
+        .offset(filtro.page * filtro.size)
+        .limit(filtro.size),
+      filtrada().count<{ count: string }[]>({ count: "*" }),
+    ]);
+    return { rows: rows as VisitaRow[], total: Number(conteo[0]?.count ?? 0) };
+  }
+
   public static async findAbiertas(filtro: FiltroAbiertas): Promise<VisitaRow[]> {
     const query = conVisitante(knex).whereNull("v.salida_en").orderBy("v.entrada_en", "asc");
     if (filtro.documento) query.andWhere("p.documento", filtro.documento);

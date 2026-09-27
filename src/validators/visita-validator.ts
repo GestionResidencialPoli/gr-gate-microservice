@@ -27,6 +27,16 @@ export const ingresoSchema = z
 
 export const documentoSchema = texto(30, "El documento");
 
+export const filtroHistoricoSchema = z.object({
+  desde: z.string().date("La fecha desde debe tener el formato YYYY-MM-DD.").optional(),
+  hasta: z.string().date("La fecha hasta debe tener el formato YYYY-MM-DD.").optional(),
+  torre: z.string().trim().min(1).max(20).optional(),
+  numero: z.string().trim().min(1).max(20).optional(),
+  documento: z.string().trim().min(1).max(30).optional(),
+  page: z.coerce.number().int().min(0).default(0),
+  size: z.coerce.number().int().min(1).max(100).default(20),
+});
+
 export const idSchema = z.coerce.number().int().positive();
 
 export const filtroAbiertasSchema = z.object({
@@ -50,6 +60,10 @@ class VisitaValidator {
 
   public static filtroAbiertas(input: unknown) {
     return filtroAbiertasSchema.parse(input);
+  }
+
+  public static filtroHistorico(input: unknown) {
+    return filtroHistoricoSchema.parse(input);
   }
 
   public static id(input: unknown) {

@@ -67,6 +67,7 @@ Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, C
 | GET | `/visitantes/{documento}` | VIGILANTE, ADMINISTRACION | Autocompletado: `{ documento, nombre, visitaAbiertaId }` o 404 `VISITANTE_NO_ENCONTRADO` |
 | PATCH | `/visitas/{id}/salida` | VIGILANTE, ADMINISTRACION | Registra la salida (HU-4.2) → `{ visita, aforo, yaEstabaCerrada }`. Atomica e idempotente |
 | GET | `/visitas/abiertas?documento=&torre=&numero=&conVehiculo=` | VIGILANTE, ADMINISTRACION | Quien esta dentro (HU-4.6), de la mas antigua a la mas reciente |
+| GET | `/visitas?desde=&hasta=&torre=&numero=&documento=&page=&size=` | ADMINISTRACION | Historico paginado (HU-4.7), las mas recientes primero, con vigilante de entrada y de salida. El vigilante solo accede a las visitas abiertas |
 | GET | `/visitas/{id}` | VIGILANTE, ADMINISTRACION | Detalle de una visita. Una visita cerrada es inmutable: no existe ruta de edicion |
 
 - `tipoVisita`: `SOCIAL` (por defecto), `DOMICILIO`, `SERVICIO` u `OTRO`.
@@ -108,6 +109,7 @@ registrando la salida a la vez liberan un unico cupo; la segunda respuesta llega
 | `USER_SERVICE_URL` | gr-user-microservice, para validar el apartamento de destino | `http://localhost:8080` |
 | `INTERNAL_SERVICE_TOKEN` | Token servicio a servicio (obligatorio, mismo valor que en gr-user-microservice) | — |
 | `USER_SERVICE_TIMEOUT_MS` | Tiempo maximo de la consulta al user-microservice | `3000` |
+| `TIMEZONE_OFFSET` | Desfase de la hora local para interpretar los filtros de fecha | `-05:00` |
 | `HORAS_POSIBLE_OLVIDO` | Horas a partir de las cuales una visita abierta se resalta como posible olvido | `12` |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Limite de solicitudes por IP | `60000` / `300` |
 

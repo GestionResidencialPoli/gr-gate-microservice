@@ -13,6 +13,7 @@ function porteriaRouter(): Router {
   router.get("/aforo/cambios", requireAdmin, AforoController.listChanges);
 
   router.post("/visitas", requireOperacion, VisitaController.registerEntry);
+  router.get("/visitas", requireAdmin, VisitaController.listHistory);
   router.get("/visitas/abiertas", requireOperacion, VisitaController.listOpen);
   router.get("/visitas/:id", requireOperacion, VisitaController.getById);
   router.patch("/visitas/:id/salida", requireOperacion, VisitaController.registerExit);
