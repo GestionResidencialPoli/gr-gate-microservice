@@ -21,6 +21,25 @@ pnpm db:ensure       # crea gr_gate_db en el contenedor si no existe
 pnpm migrate:latest  # aplica las migraciones
 ```
 
+### Modelo de datos
+
+| Tabla | Proposito |
+|---|---|
+| `visitantes` | Persona identificada por documento; sostiene el autocompletado del nombre. |
+| `visitas` | Ingreso de un visitante a un apartamento, con vigilante y hora de entrada y, al cerrarse, de salida. Una visita cerrada es inmutable. |
+| `aforo_parqueadero` | Fila unica (`id = 1`) con el total de cupos de visitantes y el contador de ocupados. |
+| `cambios_aforo` | Historico de cambios del total: valor anterior, nuevo, ocupados en ese momento, responsable y fecha. |
+
+Invariantes declaradas en PostgreSQL:
+
+- `ck_aforo_ocupados_no_negativo` y `ck_aforo_ocupados_dentro_del_total`: el contador nunca es negativo ni supera
+  el total. La unica excepcion es el sobrecupo transitorio que deja una reduccion del total con vehiculos adentro
+  (`sobrecupo_permitido` guarda cuantos habia en ese momento). Ni siquiera ese caso admite un vehiculo mas.
+- `ux_visitas_abierta_por_visitante`: indice unico parcial, un visitante no puede tener dos visitas abiertas.
+- `ck_visitas_salida_completa`: una salida siempre registra hora y vigilante.
+- Indice parcial `idx_visitas_abiertas_entrada` para el listado del turno; `idx_visitas_entrada` e
+  `idx_visitas_apartamento_entrada` para el historico.
+
 ## Autenticacion
 
 Igual que el gateway y el muro: el JWT viaja en la cookie `access_token` emitida por `gr-user-microservice` y se
