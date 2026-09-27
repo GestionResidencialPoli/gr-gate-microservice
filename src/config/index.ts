@@ -43,6 +43,14 @@ const config = {
     url: process.env.RABBITMQ_URL ?? "amqp://localhost:5672",
     eventsExchange: process.env.GATE_EVENTS_EXCHANGE ?? "gr.gate.events",
   },
+  userService: {
+    url: process.env.USER_SERVICE_URL ?? "http://localhost:8080",
+    internalToken: required("INTERNAL_SERVICE_TOKEN"),
+    timeoutMs: Number(process.env.USER_SERVICE_TIMEOUT_MS ?? 3_000),
+  },
+  porteria: {
+    horasPosibleOlvido: Number(process.env.HORAS_POSIBLE_OLVIDO ?? 12),
+  },
   rateLimit: {
     windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60_000),
     max: Number(process.env.RATE_LIMIT_MAX ?? 300),

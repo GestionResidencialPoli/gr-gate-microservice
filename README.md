@@ -47,11 +47,6 @@ verifica localmente con el mismo `JWT_SECRET`. Las mutaciones exigen ademas el e
 mismo valor de la cookie `XSRF-TOKEN` (doble envio, igual contrato que el user-microservice). Los errores tienen
 la forma `{ "error": { "code", "message", "details?" } }`.
 
-## Eventos (RabbitMQ)
-
-Publica en el exchange `topic` durable `gr.gate.events`. Si RabbitMQ no esta disponible, la operacion de
-negocio no falla: el evento se registra como advertencia en el log.
-
 ## Endpoints
 
 Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, CSRF. Respuesta exitosa: `{ payload }`.
@@ -63,6 +58,28 @@ Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, C
 | GET | `/aforo` | VIGILANTE, ADMINISTRACION | `{ total, ocupados, disponibles, sobrecupo, estado, actualizadoEn }`; `estado` es `DISPONIBLE`, `POCOS_CUPOS` (2 o menos) o `COMPLETO` |
 | PUT | `/aforo/total` | ADMINISTRACION | `{ total }` mayor que cero. Si hay mas vehiculos dentro que el nuevo total responde `advertencia: SOBRECUPO_TRANSITORIO`: nadie sale, pero no entra ningun vehiculo hasta bajar del total |
 | GET | `/aforo/cambios?page=&size=` | ADMINISTRACION | Historico: total anterior, nuevo, ocupados en ese momento, responsable y fecha |
+
+### Visitas (HU-4.1)
+
+| Metodo | Ruta | Rol | Notas |
+|---|---|---|---|
+| POST | `/visitas` | VIGILANTE, ADMINISTRACION | `{ documento, nombre?, torre, numero, tipoVisita?, conVehiculo?, placa?, cerrarVisitaAnterior? }` → `201 { visita, aforo }` |
+| GET | `/visitantes/{documento}` | VIGILANTE, ADMINISTRACION | Autocompletado: `{ documento, nombre, visitaAbiertaId }` o 404 `VISITANTE_NO_ENCONTRADO` |
+
+- `tipoVisita`: `SOCIAL` (por defecto), `DOMICILIO`, `SERVICIO` u `OTRO`.
+- El nombre solo es obligatorio en la primera visita de un documento (`422 NOMBRE_REQUERIDO`); despues se toma del
+  visitante registrado.
+- `422 APARTAMENTO_INVALIDO` si el apartamento no existe o esta inactivo (se valida contra gr-user-microservice).
+- `409 VISITA_ABIERTA` con `details.visitaAbiertaId` si el visitante ya esta adentro: reenviar con
+  `cerrarVisitaAnterior: true` cierra esa visita (y libera su cupo si tenia vehiculo) en la misma transaccion.
+- `409 AFORO_COMPLETO` con `details.puedeIngresarSinVehiculo: true` cuando no hay cupos: el aforo limita
+  parqueaderos, no personas, asi que la misma solicitud con `conVehiculo: false` si entra.
+
+## Comunicacion con otros servicios
+
+- **RabbitMQ**: publica `visita.ingreso` y `aforo.actualizado` en el exchange `topic` durable `gr.gate.events`.
+- **HTTP interno**: `GET /api/v1/internal/apartments?torre=&numero=` de gr-user-microservice (con
+  `X-Internal-Token`) para validar el apartamento de destino; si no responde, `502 DIRECTORIO_NO_DISPONIBLE`.
 
 ## Variables de entorno
 
@@ -78,6 +95,10 @@ Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, C
 | `DB_POOL_MAX` | Conexiones maximas del pool | `10` |
 | `RABBITMQ_URL` | Broker de eventos | `amqp://localhost:5672` |
 | `GATE_EVENTS_EXCHANGE` | Exchange de eventos del servicio | `gr.gate.events` |
+| `USER_SERVICE_URL` | gr-user-microservice, para validar el apartamento de destino | `http://localhost:8080` |
+| `INTERNAL_SERVICE_TOKEN` | Token servicio a servicio (obligatorio, mismo valor que en gr-user-microservice) | — |
+| `USER_SERVICE_TIMEOUT_MS` | Tiempo maximo de la consulta al user-microservice | `3000` |
+| `HORAS_POSIBLE_OLVIDO` | Horas a partir de las cuales una visita abierta se resalta como posible olvido | `12` |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Limite de solicitudes por IP | `60000` / `300` |
 
 ## Desarrollo
