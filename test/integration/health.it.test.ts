@@ -34,6 +34,12 @@ describe("esqueleto del servicio", () => {
     expect(res.body.error.code).toBe("CSRF_INVALIDO");
   });
 
+  it("publica la documentacion OpenAPI fuera de produccion", async () => {
+    const res = await request(app).get("/api-docs/");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("swagger-ui");
+  });
+
   it("propaga el identificador de correlacion recibido", async () => {
     const res = await request(app).get("/health").set("X-Correlation-Id", "abc-123");
     expect(res.headers["x-correlation-id"]).toBe("abc-123");
