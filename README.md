@@ -65,6 +65,9 @@ Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, C
 |---|---|---|---|
 | POST | `/visitas` | VIGILANTE, ADMINISTRACION | `{ documento, nombre?, torre, numero, tipoVisita?, conVehiculo?, placa?, cerrarVisitaAnterior? }` → `201 { visita, aforo }` |
 | GET | `/visitantes/{documento}` | VIGILANTE, ADMINISTRACION | Autocompletado: `{ documento, nombre, visitaAbiertaId }` o 404 `VISITANTE_NO_ENCONTRADO` |
+| PATCH | `/visitas/{id}/salida` | VIGILANTE, ADMINISTRACION | Registra la salida (HU-4.2) → `{ visita, aforo, yaEstabaCerrada }`. Atomica e idempotente |
+| GET | `/visitas/abiertas?documento=&torre=&numero=&conVehiculo=` | VIGILANTE, ADMINISTRACION | Quien esta dentro (HU-4.6), de la mas antigua a la mas reciente |
+| GET | `/visitas/{id}` | VIGILANTE, ADMINISTRACION | Detalle de una visita. Una visita cerrada es inmutable: no existe ruta de edicion |
 
 - `tipoVisita`: `SOCIAL` (por defecto), `DOMICILIO`, `SERVICIO` u `OTRO`.
 - El nombre solo es obligatorio en la primera visita de un documento (`422 NOMBRE_REQUERIDO`); despues se toma del
@@ -75,9 +78,16 @@ Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, C
 - `409 AFORO_COMPLETO` con `details.puedeIngresarSinVehiculo: true` cuando no hay cupos: el aforo limita
   parqueaderos, no personas, asi que la misma solicitud con `conVehiculo: false` si entra.
 
+Cada visita incluye `minutosDentro` y `posibleOlvido` (abierta hace mas de `HORAS_POSIBLE_OLVIDO`, 12 por
+defecto), para depurar el listado al entregar el turno.
+
+La salida cierra la visita con un `UPDATE ... WHERE id = ? AND salida_en IS NULL` y libera el cupo **solo si esa
+misma sentencia cambio la visita de abierta a cerrada**, en la misma transaccion. Un doble clic o dos porterias
+registrando la salida a la vez liberan un unico cupo; la segunda respuesta llega con `yaEstabaCerrada: true`.
+
 ## Comunicacion con otros servicios
 
-- **RabbitMQ**: publica `visita.ingreso` y `aforo.actualizado` en el exchange `topic` durable `gr.gate.events`.
+- **RabbitMQ**: publica `visita.ingreso`, `visita.salida` y `aforo.actualizado` en el exchange `topic` durable `gr.gate.events`.
 - **HTTP interno**: `GET /api/v1/internal/apartments?torre=&numero=` de gr-user-microservice (con
   `X-Internal-Token`) para validar el apartamento de destino; si no responde, `502 DIRECTORIO_NO_DISPONIBLE`.
 

@@ -85,6 +85,36 @@ const openapi = {
         },
       },
     },
+    "/porteria/visitas/abiertas": {
+      get: {
+        summary: "Visitas abiertas: quien esta dentro de la unidad (VIGILANTE, ADMINISTRACION)",
+        parameters: [
+          { name: "documento", in: "query", schema: { type: "string" } },
+          { name: "torre", in: "query", schema: { type: "string" } },
+          { name: "numero", in: "query", schema: { type: "string" } },
+          { name: "conVehiculo", in: "query", schema: { type: "boolean" } },
+        ],
+        responses: { "200": { description: "Visitas abiertas con minutosDentro y posibleOlvido" }, ...errorResponses },
+      },
+    },
+    "/porteria/visitas/{id}": {
+      get: {
+        summary: "Detalle de una visita (VIGILANTE, ADMINISTRACION)",
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
+        responses: { "200": { description: "Visita" }, "404": { description: "VISITA_NO_ENCONTRADA" }, ...errorResponses },
+      },
+    },
+    "/porteria/visitas/{id}/salida": {
+      patch: {
+        summary: "Registrar la salida de un visitante; atomica e idempotente (VIGILANTE, ADMINISTRACION)",
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
+        responses: {
+          "200": { description: "{ visita, aforo, yaEstabaCerrada }" },
+          "404": { description: "VISITA_NO_ENCONTRADA" },
+          ...errorResponses,
+        },
+      },
+    },
     "/porteria/visitantes/{documento}": {
       get: {
         summary: "Autocompletar un visitante por documento (VIGILANTE, ADMINISTRACION)",

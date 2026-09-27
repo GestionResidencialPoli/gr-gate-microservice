@@ -20,7 +20,23 @@ function conVisitante(trx: Knex | Knex.Transaction) {
     .select("v.*", "p.documento as visitante_documento", "p.nombre as visitante_nombre");
 }
 
+export interface FiltroAbiertas {
+  documento?: string;
+  torre?: string;
+  numero?: string;
+  conVehiculo?: boolean;
+}
+
 class VisitaRepository {
+  public static async findAbiertas(filtro: FiltroAbiertas): Promise<VisitaRow[]> {
+    const query = conVisitante(knex).whereNull("v.salida_en").orderBy("v.entrada_en", "asc");
+    if (filtro.documento) query.andWhere("p.documento", filtro.documento);
+    if (filtro.torre) query.andWhereRaw("lower(v.apartamento_torre) = lower(?)", [filtro.torre]);
+    if (filtro.numero) query.andWhereRaw("lower(v.apartamento_numero) = lower(?)", [filtro.numero]);
+    if (filtro.conVehiculo !== undefined) query.andWhere("v.con_vehiculo", filtro.conVehiculo);
+    return query;
+  }
+
   public static async findById(id: number, trx: Knex | Knex.Transaction = knex): Promise<VisitaRow | undefined> {
     return conVisitante(trx).where("v.id", id).first();
   }

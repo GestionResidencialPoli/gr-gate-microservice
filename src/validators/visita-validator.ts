@@ -29,6 +29,16 @@ export const documentoSchema = texto(30, "El documento");
 
 export const idSchema = z.coerce.number().int().positive();
 
+export const filtroAbiertasSchema = z.object({
+  documento: z.string().trim().min(1).max(30).optional(),
+  torre: z.string().trim().min(1).max(20).optional(),
+  numero: z.string().trim().min(1).max(20).optional(),
+  conVehiculo: z
+    .enum(["true", "false"])
+    .transform((valor) => valor === "true")
+    .optional(),
+});
+
 class VisitaValidator {
   public static ingreso(input: unknown) {
     return ingresoSchema.parse(input);
@@ -36,6 +46,10 @@ class VisitaValidator {
 
   public static documento(input: unknown) {
     return documentoSchema.parse(input);
+  }
+
+  public static filtroAbiertas(input: unknown) {
+    return filtroAbiertasSchema.parse(input);
   }
 
   public static id(input: unknown) {

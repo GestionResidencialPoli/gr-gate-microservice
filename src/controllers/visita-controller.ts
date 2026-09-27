@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import Session from "../lib/session";
 import IngresoService from "../services/ingreso-service";
+import SalidaService from "../services/salida-service";
+import VisitaConsultaService from "../services/visita-consulta-service";
 import VisitanteService from "../services/visitante-service";
 import HttpStatus from "../types/enums/http-status";
 import VisitaValidator from "../validators/visita-validator";
@@ -16,6 +18,33 @@ class VisitaController {
     try {
       const resultado = await IngresoService.registrar(VisitaValidator.ingreso(req.body), responsable(req));
       BaseController.handleSuccess(res, { statusCode: HttpStatus.Created, payload: resultado });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public static async registerExit(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const resultado = await SalidaService.registrar(VisitaValidator.id(req.params.id), responsable(req));
+      BaseController.handleSuccess(res, { payload: resultado });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public static async listOpen(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const visitas = await VisitaConsultaService.abiertas(VisitaValidator.filtroAbiertas(req.query));
+      BaseController.handleSuccess(res, { payload: visitas });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const visita = await VisitaConsultaService.obtener(VisitaValidator.id(req.params.id));
+      BaseController.handleSuccess(res, { payload: visita });
     } catch (error) {
       next(error);
     }
