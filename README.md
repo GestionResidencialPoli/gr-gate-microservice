@@ -52,6 +52,18 @@ la forma `{ "error": { "code", "message", "details?" } }`.
 Publica en el exchange `topic` durable `gr.gate.events`. Si RabbitMQ no esta disponible, la operacion de
 negocio no falla: el evento se registra como advertencia en el log.
 
+## Endpoints
+
+Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, CSRF. Respuesta exitosa: `{ payload }`.
+
+### Aforo del parqueadero de visitantes (HU-4.3)
+
+| Metodo | Ruta | Rol | Notas |
+|---|---|---|---|
+| GET | `/aforo` | VIGILANTE, ADMINISTRACION | `{ total, ocupados, disponibles, sobrecupo, estado, actualizadoEn }`; `estado` es `DISPONIBLE`, `POCOS_CUPOS` (2 o menos) o `COMPLETO` |
+| PUT | `/aforo/total` | ADMINISTRACION | `{ total }` mayor que cero. Si hay mas vehiculos dentro que el nuevo total responde `advertencia: SOBRECUPO_TRANSITORIO`: nadie sale, pero no entra ningun vehiculo hasta bajar del total |
+| GET | `/aforo/cambios?page=&size=` | ADMINISTRACION | Historico: total anterior, nuevo, ocupados en ese momento, responsable y fecha |
+
 ## Variables de entorno
 
 | Variable | Descripcion | Valor por defecto |
