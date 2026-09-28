@@ -60,8 +60,8 @@ describe("HU-4.1 registrar el ingreso de un visitante", () => {
   });
 
   it("CA-3 rechaza un apartamento inexistente o inactivo", async () => {
-    const inexistente = await ingresar({ documento: documentoUnico(), nombre: "X", torre: "Z", numero: "1" });
-    const inactivo = await ingresar({ documento: documentoUnico(), nombre: "X", numero: "999" });
+    const inexistente = await ingresar({ documento: documentoUnico(), nombre: "Xavier", torre: "Z", numero: "1" });
+    const inactivo = await ingresar({ documento: documentoUnico(), nombre: "Xavier", numero: "999" });
 
     expect(inexistente.status).toBe(422);
     expect(inexistente.body.error.code).toBe("APARTAMENTO_INVALIDO");
@@ -87,7 +87,7 @@ describe("HU-4.1 registrar el ingreso de un visitante", () => {
   });
 
   it("CA-5 un residente recibe 403 al registrar un visitante", async () => {
-    const res = await ingresar({ documento: documentoUnico(), nombre: "X" }, residente(1));
+    const res = await ingresar({ documento: documentoUnico(), nombre: "Xavier" }, residente(1));
     expect(res.status).toBe(403);
   });
 
@@ -113,7 +113,7 @@ describe("HU-4.1 registrar el ingreso de un visitante", () => {
     expect(sinNombre.status).toBe(422);
     expect(sinNombre.body.error.code).toBe("NOMBRE_REQUERIDO");
 
-    const placaSinVehiculo = await ingresar({ documento: documentoUnico(), nombre: "X", placa: "ABC123" });
+    const placaSinVehiculo = await ingresar({ documento: documentoUnico(), nombre: "Xavier", placa: "ABC123" });
     expect(placaSinVehiculo.status).toBe(400);
   });
 });

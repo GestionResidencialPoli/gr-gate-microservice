@@ -72,6 +72,12 @@ Todas las rutas viven bajo `/api/v1/porteria`, exigen sesion y, en mutaciones, C
 | GET | `/visitas/{id}` | VIGILANTE, ADMINISTRACION | Detalle de una visita. Una visita cerrada es inmutable: no existe ruta de edicion |
 
 - `tipoVisita`: `SOCIAL` (por defecto), `DOMICILIO`, `SERVICIO` u `OTRO`.
+- Formatos (`src/validators/formatos.ts`, los mismos que el user-microservice):
+  - `documento`: letras, dígitos y guion, de 4 a 30.
+  - `nombre`: solo letras (con tildes y eñe), espacios, apóstrofo, punto y guion, desde 2 caracteres.
+  - `torre` y `numero`: letras, dígitos y guion, hasta 20.
+  - `placa`: colombiana, `ABC123` (carro) o `ABC12D` (moto). Se normaliza a mayúsculas y sin espacios ni guiones.
+  - Un formato inválido responde `400 SOLICITUD_INVALIDA` con el campo en `details`.
 - El nombre solo es obligatorio en la primera visita de un documento (`422 NOMBRE_REQUERIDO`); despues se toma del
   visitante registrado.
 - `422 APARTAMENTO_INVALIDO` si el apartamento no existe o esta inactivo (se valida contra gr-user-microservice).
