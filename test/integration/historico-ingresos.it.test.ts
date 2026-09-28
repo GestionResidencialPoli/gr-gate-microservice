@@ -67,8 +67,8 @@ describe("HU-4.7 consultar el historico de ingresos como administrador", () => {
   });
 
   it("CA-3 filtrar por apartamento deja solo las visitas dirigidas a ese apartamento", async () => {
-    await ingresar({ documento: documentoUnico(), nombre: "Al 101" });
-    const al303 = await ingresar({ documento: documentoUnico(), nombre: "Al 303", torre: "C", numero: "303" });
+    await ingresar({ documento: documentoUnico(), nombre: "Visitante Uno" });
+    const al303 = await ingresar({ documento: documentoUnico(), nombre: "Visitante Tres", torre: "C", numero: "303" });
 
     const res = await historico("?torre=C&numero=303&size=100");
 

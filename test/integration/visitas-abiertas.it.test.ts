@@ -44,8 +44,8 @@ describe("HU-4.6 consultar quien esta actualmente dentro de la unidad", () => {
   });
 
   it("CA-4 filtra por numero de apartamento", async () => {
-    await ingresar({ documento: documentoUnico(), nombre: "Al 101" });
-    const al202 = await ingresar({ documento: documentoUnico(), nombre: "Al 202", torre: "B", numero: "202" });
+    await ingresar({ documento: documentoUnico(), nombre: "Visitante Uno" });
+    const al202 = await ingresar({ documento: documentoUnico(), nombre: "Visitante Dos", torre: "B", numero: "202" });
 
     const res = await request(app).get("/api/v1/porteria/visitas/abiertas?numero=202").set("Cookie", vigilante(801).cookie);
 
