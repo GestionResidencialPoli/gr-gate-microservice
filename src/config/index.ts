@@ -59,10 +59,11 @@ const config = {
     url: process.env.RABBITMQ_URL ?? "amqp://localhost:5672",
     eventsExchange: process.env.GATE_EVENTS_EXCHANGE ?? "gr.gate.events",
   },
-  userService: {
-    url: process.env.USER_SERVICE_URL ?? "http://localhost:8080",
+  communications: {
+    url: process.env.COMMUNICATIONS_WS_URL ?? "ws://localhost:4600/internal/ws",
     internalToken: required("INTERNAL_SERVICE_TOKEN"),
-    timeoutMs: Number(process.env.USER_SERVICE_TIMEOUT_MS ?? 3_000),
+    timeoutMs: Number(process.env.COMMUNICATIONS_TIMEOUT_MS ?? 3_000),
+    silenceLimitMs: Number(process.env.COMMUNICATIONS_SILENCE_LIMIT_MS ?? 60_000),
   },
   zonaHoraria: {
     offset: process.env.TIMEZONE_OFFSET ?? "-05:00",
